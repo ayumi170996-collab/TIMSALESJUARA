@@ -1,0 +1,6 @@
+{
+  "name": "TimSalesJuara — Dashboard Operasional Bisnis",
+  "description": "Dashboard monitoring operasional bisnis, 3 pilar layanan, kesehatan klien, pipeline penjualan, tren mingguan, dan issue tracking dengan integrasi Google Sheets & AI Business Advisor.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --red: #C41E3A;
+  --dark: #1A1A2E;
+  --dark2: #16213E;
+  --card: #1F2A44;
+  --border: #2A3A5C;
+  --text: #E8ECF4;
+  --muted: #8B9BB8;
+  --green: #28A745;
+  --yellow: #E6A817;
+}
+
+body {
+  background-color: var(--dark);
+  color: var(--text);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #16213E;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A3A5C;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C41E3A;
+}

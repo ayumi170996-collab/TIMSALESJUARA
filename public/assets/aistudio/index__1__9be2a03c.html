@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TimSalesJuara — Dashboard Operasional Bisnis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --red: #C41E3A; --dark: #1A1A2E; --dark2: #16213E; --card: #1F2A44;
+      --border: #2A3A5C; --text: #E8ECF4; --muted: #8B9BB8; --green: #28A745; --yellow: #E6A817;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--dark); color: var(--text); min-height: 100vh; line-height: 1.45; }
+    .topbar { background: linear-gradient(135deg, var(--dark2), var(--dark)); border-bottom: 2px solid var(--red); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-mark { width: 36px; height: 36px; background: var(--red); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; color: #fff; }
+    .brand h1 { font-size: 16px; font-weight: 700; }
+    .brand p { font-size: 11px; color: var(--muted); }
+    .meta { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+    .meta strong { color: var(--text); }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; border: 1px solid var(--red); background: rgba(196,30,58,0.2); color: #ff6b81; }
+    .badge.live { border-color: #28A745; background: rgba(40,167,69,0.2); color: #5CDB7A; }
+    .badge.demo { border-color: #E6A817; background: rgba(230,168,23,0.2); color: #F5B041; }
+    .btn { background: var(--red); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn:hover { background: #9B1830; }
+    .btn:disabled { opacity: 0.5; cursor: wait; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px 24px 40px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px; }
+    .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+    .kpi:hover { border-color: var(--red); }
+    .kpi .label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 600; }
+    .kpi .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+    .kpi .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .kpi.green .value { color: #5CDB7A; } .kpi.blue .value { color: #5DADE2; } .kpi.orange .value { color: #F5B041; } .kpi.red .value { color: #FF6B81; }
+    .section { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; margin-bottom: 18px; }
+    .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::before { content: ''; width: 4px; height: 14px; background: var(--red); border-radius: 2px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .chart-box { position: relative; height: 260px; } .chart-box.sm { height: 220px; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    th { text-align: left; padding: 8px 10px; background: rgba(196,30,58,0.15); color: #ff8a9a; font-weight: 600; font-size: 11px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 9px 10px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: rgba(255,255,255,0.03); }
+    .status { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 700; }
+    .s-ok { background: rgba(40,167,69,0.2); color: #5CDB7A; } .s-warn { background: rgba(230,168,23,0.2); color: #F5B041; }
+    .s-risk { background: rgba(231,76,60,0.2); color: #FF6B81; } .s-info { background: rgba(52,152,219,0.2); color: #5DADE2; }
+    .pilar-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    @media (max-width: 700px) { .pilar-cards { grid-template-columns: 1fr; } }
+    .pilar { background: rgba(0,0,0,0.25); border-radius: 10px; padding: 14px; border: 1px solid var(--border); }
+    .pilar h3 { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .pilar .nums { display: flex; justify-content: space-between; align-items: baseline; }
+    .pilar .aktual { font-size: 20px; font-weight: 700; } .pilar .target { font-size: 12px; color: var(--muted); }
+    .pilar .pct { font-size: 13px; font-weight: 700; margin-top: 6px; }
+    .progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-top: 4px; }
+    .progress-bar span { display: block; height: 100%; border-radius: 3px; background: var(--red); }
+    .progress-bar span.ok { background: var(--green); } .progress-bar span.warn { background: var(--yellow); }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; font-weight: 600; }
+    .tab:hover, .tab.active { background: var(--red); border-color: var(--red); color: #fff; }
+    .panel { display: none; } .panel.active { display: block; }
+    .loading { text-align: center; padding: 40px; color: var(--muted); }
+    .error-banner { background: rgba(231,76,60,0.15); border: 1px solid #E74C3C; color: #FF6B81; padding: 10px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; display: none; }
+    footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">TSJ</div>
+      <div>
+        <h1>TimSalesJuara — Dashboard Operasional</h1>
+        <p>Business Growth · Klien · Pipeline · 3 Pilar · Tim</p>
+      </div>
+    </div>
+    <div class="meta">
+      <span>Periode: <strong id="periode">—</strong></span>
+      <span class="badge" id="statusBadge">—</span>
+      <span class="badge demo" id="sourceBadge">Demo</span>
+      <button class="btn" id="btnRefresh" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="error-banner" id="errorBanner"></div>
+    <div class="loading" id="loading">Memuat data…</div>
+    <div id="content" style="display:none">
+      <div class="kpi-grid" id="kpiGrid"></div>
+      <div class="section">
+        <div class="section-title">3 Pilar Layanan — Target vs Aktual</div>
+        <div class="pilar-cards" id="pilarCards"></div>
+        <div class="grid-2">
+          <div class="chart-box sm"><canvas id="chartPilar"></canvas></div>
+          <div class="chart-box sm"><canvas id="chartPilarPct"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Kesehatan Klien Aktif</div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>Klien</th><th>Stage</th><th>Leads</th><th>Meeting</th><th>Revenue</th><th>% Target</th><th>Owner</th><th>Risiko</th></tr></thead>
+              <tbody id="klienBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Revenue & Achievement per Klien</div>
+          <div class="chart-box"><canvas id="chartKlien"></canvas></div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="section">
+          <div class="section-title">Pipeline Prospek & Expected Value</div>
+          <div class="chart-box sm"><canvas id="chartPipeline"></canvas></div>
+          <table style="margin-top:12px">
+            <thead><tr><th>Prospek</th><th>Stage</th><th>Nilai Est.</th><th>Prob</th><th>Expected</th></tr></thead>
+            <tbody id="pipelineBody"></tbody>
+          </table>
+        </div>
+        <div class="section">
+          <div class="section-title">Ownership Weekly Session</div>
+          <div class="chart-box sm"><canvas id="chartOwnership"></canvas></div>
+          <p style="font-size:11px;color:var(--muted);margin-top:10px">Target OL: minimal <strong style="color:var(--text)">2 dari 3</strong> weekly session dipegang BGM di akhir bulan ke-3.</p>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Tren Mingguan</div>
+        <div class="tabs">
+          <button class="tab active" data-panel="trenAktivitas">Aktivitas</button>
+          <button class="tab" data-panel="trenRevenue">Revenue</button>
+        </div>
+        <div id="trenAktivitas" class="panel active"><div class="chart-box"><canvas id="chartWeekly"></canvas></div></div>
+        <div id="trenRevenue" class="panel"><div class="chart-box"><canvas id="chartWeeklyRev"></canvas></div></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Issue Bisnis & Next Action</div>
+        <table>
+          <thead><tr><th>Issue</th><th>Area</th><th>Impact</th><th>Next Action</th><th>Owner</th><th>Deadline</th><th>Status</th></tr></thead>
+          <tbody id="issueBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <footer>TimSalesJuara · PT Sinergi Unggul Indonesia · Google Sheets API / mode demo</footer>
+
+  <script>
+    const DEMO = {
+      meta: { periode: 'Oktober 2026', status_overall: 'On Track' },
+      kpi: [
+        { label: 'Klien Aktif', value: '5', sub: '+1 vs bulan lalu' },
+        { label: 'Prospek Pipeline', value: '8', sub: 'Expected value aktif' },
+        { label: 'Proposal MTD', value: '4', sub: '≤3 hari kerja' },
+        { label: 'Win Rate', value: '50%', sub: '2 dari 4 proposal' },
+        { label: 'Meeting MTD', value: '14', sub: 'Target 20' },
+        { label: 'Revenue MTD', value: 'Rp 95jt', sub: 'Target Rp 150jt' },
+        { label: 'Retention', value: '100%', sub: 'Target ≥80%' },
+        { label: 'Churn QTD', value: '0', sub: 'Maks 1 / kuartal' }
+      ],
+      pilar: [
+        { nama: 'LEADS', target: 100, aktual: 75 },
+        { nama: 'MEETINGS', target: 20, aktual: 14 },
+        { nama: 'REVENUE', target: 150, aktual: 95 }
+      ],
+      klien: [
+        { nama: 'Klien A', stage: 'Active', leads: 20, meeting: 5, revenue_jt: 35, pct_target: 90, owner: 'Ayumi', risiko: 'Low' },
+        { nama: 'Klien B', stage: 'Active', leads: 12, meeting: 3, revenue_jt: 18, pct_target: 55, owner: 'Ayumi', risiko: 'Medium' },
+        { nama: 'Klien C', stage: 'Onboarding', leads: 8, meeting: 2, revenue_jt: 0, pct_target: 40, owner: 'Shared', risiko: 'Low' },
+        { nama: 'Klien D', stage: 'At Risk', leads: 5, meeting: 1, revenue_jt: 5, pct_target: 25, owner: 'Ayumi', risiko: 'High' },
+        { nama: 'Klien E', stage: 'Active', leads: 25, meeting: 4, revenue_jt: 40, pct_target: 105, owner: 'Direktur', risiko: 'Low' }
+      ],
+      pipeline: [
+        { nama: 'Prospek X', stage: 'Proposal', nilai_jt: 50, prob: 40, expected_jt: 20 },
+        { nama: 'Prospek Y', stage: 'Negotiation', nilai_jt: 80, prob: 60, expected_jt: 48 },
+        { nama: 'Prospek Z', stage: 'Discovery', nilai_jt: 30, prob: 20, expected_jt: 6 },
+        { nama: 'Prospek W', stage: 'Proposal', nilai_jt: 45, prob: 35, expected_jt: 15.8 }
+      ],
+      ownership: [
+        { klien: 'Klien A', session_bgm: 3 }, { klien: 'Klien B', session_bgm: 2 },
+        { klien: 'Klien C', session_bgm: 0 }, { klien: 'Klien D', session_bgm: 4 }, { klien: 'Klien E', session_bgm: 0 }
+      ],
+      weekly: [
+        { minggu: 'W1', proposal: 1, discovery: 2, meeting: 3, leads: 15, revenue_jt: 10 },
+        { minggu: 'W2', proposal: 2, discovery: 1, meeting: 4, leads: 22, revenue_jt: 25 },
+        { minggu: 'W3', proposal: 0, discovery: 3, meeting: 3, leads: 18, revenue_jt: 20 },
+        { minggu: 'W4', proposal: 1, discovery: 2, meeting: 4, leads: 20, revenue_jt: 40 }
+      ],
+      issue: [
+        { issue: 'Leads Klien D jauh di bawah target', area: 'Klien D', impact: 'High', next_action: 'Audit channel + ganti ICP', owner: 'Ayumi', deadline: '05/11/2026', status: 'Open' },
+        { issue: 'Report Klien B sempat revisi data', area: 'QC / Report', impact: 'Medium', next_action: 'Perketat checklist QC', owner: 'Ayumi', deadline: 'Ongoing', status: 'In Progress' }
+      ]
+    };
+
+    const KPI_COLORS = ['blue', 'orange', 'red', 'green', 'blue', 'green', 'orange', 'red'];
+    let charts = {};
+    Chart.defaults.color = '#8B9BB8';
+    Chart.defaults.borderColor = '#2A3A5C';
+    Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+    Chart.defaults.font.size = 11;
+
+    function statusClass(s) {
+      const v = String(s || '').toLowerCase();
+      if (['active', 'ok', 'low', 'done', 'on track'].includes(v)) return 's-ok';
+      if (['medium', 'behind', 'in progress', 'negotiation'].includes(v)) return 's-warn';
+      if (['high', 'at risk', 'open'].includes(v)) return 's-risk';
+      return 's-info';
+    }
+    function pctStatus(pct) {
+      if (pct >= 100) return { text: 'Exceeded', color: '#5CDB7A', bar: 'ok' };
+      if (pct >= 80) return { text: 'On Track', color: '#5CDB7A', bar: 'ok' };
+      if (pct >= 50) return { text: 'Behind', color: '#F5B041', bar: 'warn' };
+      return { text: 'At Risk', color: '#FF6B81', bar: '' };
+    }
+    function destroyCharts() {
+      Object.keys(charts).forEach(k => { try { charts[k].destroy(); } catch (e) {} });
+      charts = {};
+    }
+
+    function render(data, isLive) {
+      const meta = data.meta || {};
+      document.getElementById('periode').textContent = meta.periode || '—';
+      document.getElementById('statusBadge').textContent = meta.status_overall || meta.status || '—';
+      const src = document.getElementById('sourceBadge');
+      src.textContent = isLive ? 'Live · Sheets' : 'Demo';
+      src.className = 'badge ' + (isLive ? 'live' : 'demo');
+
+      document.getElementById('kpiGrid').innerHTML = (data.kpi || []).map((k, i) =>
+        `<div class="kpi ${KPI_COLORS[i % KPI_COLORS.length]}"><div class="label">${k.label}</div><div class="value">${k.value}</div><div class="sub">${k.sub || ''}</div></div>`
+      ).join('');
+
+      const pilar = data.pilar || [];
+      document.getElementById('pilarCards').innerHTML = pilar.map(p => {
+        const pct = p.target ? Math.round((p.aktual / p.target) * 100) : 0;
+        const st = pctStatus(pct);
+        const isRev = String(p.nama).toUpperCase().includes('REVENUE');
+        return `<div class="pilar"><h3>${p.nama}</h3><div class="nums"><span class="aktual">${isRev ? 'Rp ' + p.aktual + 'jt' : p.aktual}</span><span class="target">/ ${isRev ? 'Rp ' + p.target + 'jt' : p.target}</span></div><div class="pct" style="color:${st.color}">${pct}% · ${st.text}</div><div class="progress-bar"><span class="${st.bar}" style="width:${Math.min(pct,100)}%"></span></div></div>`;
+      }).join('');
+
+      document.getElementById('klienBody').innerHTML = (data.klien || []).map(k =>
+        `<tr><td><strong>${k.nama}</strong></td><td><span class="status ${statusClass(k.stage)}">${k.stage}</span></td><td>${k.leads}</td><td>${k.meeting}</td><td>${k.revenue_jt ? 'Rp ' + k.revenue_jt + 'jt' : '—'}</td><td>${k.pct_target}%</td><td>${k.owner}</td><td><span class="status ${statusClass(k.risiko)}">${k.risiko}</span></td></tr>`
+      ).join('');
+
+      document.getElementById('pipelineBody').innerHTML = (data.pipeline || []).map(p =>
+        `<tr><td>${p.nama}</td><td><span class="status ${statusClass(p.stage)}">${p.stage}</span></td><td>Rp ${p.nilai_jt}jt</td><td>${p.prob}%</td><td>Rp ${p.expected_jt}jt</td></tr>`
+      ).join('');
+
+      document.getElementById('issueBody').innerHTML = (data.issue || []).map(i =>
+        `<tr><td>${i.issue}</td><td>${i.area}</td><td><span class="status ${statusClass(i.impact)}">${i.impact}</span></td><td>${i.next_action}</td><td>${i.owner}</td><td>${i.deadline}</td><td><span class="status ${statusClass(i.status)}">${i.status}</span></td></tr>`
+      ).join('');
+
+      destroyCharts();
+      renderCharts(data);
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('content').style.display = 'block';
+    }
+
+    function renderCharts(data) {
+      const pilar = data.pilar || [], klien = data.klien || [], pipeline = data.pipeline || [];
+      const ownership = data.ownership || [], weekly = data.weekly || [];
+
+      charts.pilar = new Chart(document.getElementById('chartPilar'), {
+        type: 'bar',
+        data: { labels: pilar.map(p => p.nama), datasets: [
+          { label: 'Target', data: pilar.map(p => p.target), backgroundColor: 'rgba(196,30,58,0.7)', borderRadius: 4 },
+          { label: 'Aktual', data: pilar.map(p => p.aktual), backgroundColor: 'rgba(52,152,219,0.7)', borderRadius: 4 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, grid: { color: '#2A3A5C' } }, x: { grid: { display: false } } } }
+      });
+
+      const pcts = pilar.map(p => p.target ? Math.round((p.aktual / p.target) * 100) : 0);
+      charts.pilarPct = new Chart(document.getElementById('chartPilarPct'), {
+        type: 'doughnut',
+        data: { labels: pilar.map((p, i) => p.nama + ' ' + pcts[i] + '%'), datasets: [{ data: pcts, backgroundColor: ['#E6A817', '#E67E22', '#C41E3A'], borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, title: { display: true, text: 'Achievement %', color: '#8B9BB8', font: { size: 12 } } }, cutout: '55%' }
+      });
+
+      charts.klien = new Chart(document.getElementById('chartKlien'), {
+        type: 'bar',
+        data: { labels: klien.map(k => k.nama), datasets: [
+          { label: 'Revenue (jt)', data: klien.map(k => k.revenue_jt), backgroundColor: 'rgba(52,152,219,0.75)', borderRadius: 4, yAxisID: 'y' },
+          { label: '% Target', data: klien.map(k => k.pct_target), type: 'line', borderColor: '#C41E3A', tension: 0.3, yAxisID: 'y1', pointRadius: 4 }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+          scales: { y: { position: 'left', beginAtZero: true, grid: { color: '#2A3A5C' } }, y1: { position: 'right', beginAtZero: true, max: 120, grid: { display: false } }, x: { grid: { display: false } } } }
+      });
+
+      charts.pipeline = new Chart(document.getElementById('chartPipeline'), {
+        type: 'bar',
+        data: { labels: pipeline.map(p => p.nama), datasets: [{ label: 'Expected (jt)', data: pipeline.map(p => p.expected_jt), backgroundColor: ['#3498DB', '#28A745', '#E6A817', '#9B59B6'], borderRadius: 6 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: '#2A3A5C' } }, y: { grid: { display: false } } } }
+      });
+
+      charts.ownership = new Chart(document.getElementById('chartOwnership'), {
+        type: 'bar',
+        data: { labels: ownership.map(o => o.klien), datasets: [{ label: 'Session BGM', data: ownership.map(o => o.session_bgm), backgroundColor: 'rgba(196,30,58,0.8)', borderRadius: 4 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 4, ticks: { stepSize: 1 }, grid: { color: '#2A3A5C' } }, x: { grid: { display: false } } } }
+      });
+
+      charts.weekly = new Chart(document.getElementById('chartWeekly'), {
+        type: 'line',
+        data: { labels: weekly.map(w => w.minggu), datasets: [
+          { label: 'Proposal', data: weekly.map(w => w.proposal), borderColor: '#C41E3A', tension: 0.3, fill: false },
+          { label: 'Meeting', data: weekly.map(w => w.meeting), borderColor: '#3498DB', tension: 0.3, fill: false },
+          { label: 'Leads', data: weekly.map(w => w.leads), borderColor: '#28A745', tension: 0.3, fill: false },
+          { label: 'Discovery', data: weekly.map(w => w.discovery), borderColor: '#E6A817', tension: 0.3, fill: false }
+        ]},
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, grid: { color: '#2A3A5C' } }, x: { grid: { display: false } } } }
+      });
+
+      charts.weeklyRev = new Chart(document.getElementById('chartWeeklyRev'), {
+        type: 'line',
+        data: { labels: weekly.map(w => w.minggu), datasets: [{ label: 'Revenue (jt)', data: weekly.map(w => w.revenue_jt), borderColor: '#C41E3A', backgroundColor: 'rgba(196,30,58,0.15)', fill: true, tension: 0.35, pointRadius: 5 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, grid: { color: '#2A3A5C' } }, x: { grid: { display: false } } } }
+      });
+    }
+
+    async function loadData() {
+      const cfg = window.TSJ_CONFIG || {};
+      const btn = document.getElementById('btnRefresh');
+      const errEl = document.getElementById('errorBanner');
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      if (!cfg.API_URL || !String(cfg.API_URL).trim()) {
+        render(DEMO, false);
+        btn.disabled = false;
+        return;
+      }
+      try {
+        const url = cfg.API_URL + (cfg.API_URL.includes('?') ? '&' : '?') + 'action=' + (cfg.API_ACTION || 'all');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        render(data, true);
+      } catch (err) {
+        console.error(err);
+        errEl.textContent = 'Gagal memuat Google Sheets: ' + err.message + ' — menampilkan data demo.';
+        errEl.style.display = 'block';
+        render(DEMO, false);
+      }
+      btn.disabled = false;
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', loadData);
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.panel).classList.add('active');
+      });
+    });
+    loadData();
+    const cfg = window.TSJ_CONFIG || {};
+    if (cfg.REFRESH_MS && cfg.REFRESH_MS > 0) setInterval(loadData, cfg.REFRESH_MS);
+  </script>
+</body>
+</html>
